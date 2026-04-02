@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
-  var ROUTER_API_URL = "/api/wifi/disable";
+  const ROUTER_API_URL = "/api/wifi/disable";
 
-  var minutesInput = document.getElementById("minutes");
-  var disableBtn = document.getElementById("disableBtn");
-  var statusDiv = document.getElementById("status");
+  const minutesInput = document.getElementById("minutes");
+  const disableBtn = document.getElementById("disableBtn");
+  const statusDiv = document.getElementById("status");
 
   function showStatus(message, type) {
     statusDiv.textContent = message;
@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function validateMinutes() {
-    var value = parseInt(minutesInput.value, 10);
+    const value = parseInt(minutesInput.value, 10);
     if (isNaN(value) || value < 1) {
       return null;
     }
@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   disableBtn.addEventListener("click", function () {
-    var minutes = validateMinutes();
+    const minutes = validateMinutes();
     if (minutes === null) {
       showStatus("Introduce un valor entre 1 y 1440 minutos.", "error");
       return;
