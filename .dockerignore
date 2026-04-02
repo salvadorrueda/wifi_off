@@ -1,0 +1,31 @@
+# Secrets — mai han d'entrar a la imatge
+.env
+
+# Control de versions
+.git
+.gitignore
+
+# Tests — no necessaris en runtime
+tests.py
+.pytest_cache
+.coverage
+
+# Bytecode i caches de Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Entorns virtuals locals
+venv/
+.venv/
+env/
+
+# Artefactes de build
+*.egg-info
+dist/
+build/
+
+# SO / editor
+.DS_Store
+*.swp

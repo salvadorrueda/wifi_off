@@ -1,0 +1,16 @@
+services:
+  wifi_off:
+    build: .
+    image: wifi_off:latest
+    container_name: wifi_off
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    networks:
+      - wifi_off_net
+
+networks:
+  wifi_off_net:
+    driver: bridge
