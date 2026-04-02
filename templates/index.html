@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WiFi Off – Mikrotik</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+      padding: 2rem;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      color: #1a202c;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .subtitle {
+      color: #718096;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 0.3rem;
+    }
+
+    input[type="text"], input[type="password"], input[type="number"] {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+      transition: border-color 0.15s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #4299e1;
+      box-shadow: 0 0 0 3px rgba(66,153,225,0.2);
+    }
+
+    .row { display: flex; gap: 1rem; }
+    .row > div { flex: 1; }
+
+    .btn {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.98); }
+
+    .btn-off {
+      background: #e53e3e;
+      color: #fff;
+      margin-bottom: 0.75rem;
+    }
+    .btn-off:hover:not(:disabled) { background: #c53030; }
+
+    .btn-on {
+      background: #38a169;
+      color: #fff;
+    }
+    .btn-on:hover:not(:disabled) { background: #276749; }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Status panel */
+    .status-panel {
+      margin-top: 1.5rem;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-on  { background: #48bb78; box-shadow: 0 0 0 3px rgba(72,187,120,0.3); }
+    .dot-off { background: #fc8181; box-shadow: 0 0 0 3px rgba(252,129,129,0.3); }
+
+    .countdown {
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+      color: #4a5568;
+    }
+
+    .countdown-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #e53e3e;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .error-msg {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: #fff5f5;
+      border: 1px solid #feb2b2;
+      border-radius: 6px;
+      color: #c53030;
+      font-size: 0.875rem;
+    }
+
+    .env-notice {
+      font-size: 0.8rem;
+      color: #718096;
+      margin-bottom: 1rem;
+      padding: 0.5rem 0.75rem;
+      background: #ebf8ff;
+      border-left: 3px solid #4299e1;
+      border-radius: 0 4px 4px 0;
+    }
+
+    hr { border: none; border-top: 1px solid #e2e8f0; margin: 1.5rem 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>📡 WiFi Off</h1>
+    <p class="subtitle">Apaga la WiFi del router Mikrotik durant un temps determinat</p>
+
+    <form id="main-form">
+
+      <!-- Router credentials (hidden when set via env) -->
+      {% if credentials_from_env %}
+        <div class="env-notice">
+          ✅ Connectant a <strong>{{ env_host }}</strong> amb les variables d'entorn.
+        </div>
+        <!-- Hidden fields so the form still submits host/user/pass if env not loaded server-side -->
+      {% else %}
+        <hr>
+        <div class="row">
+          <div>
+            <label for="host">IP del router</label>
+            <input id="host" name="host" type="text" placeholder="192.168.88.1" required />
+          </div>
+          <div>
+            <label for="username">Usuari</label>
+            <input id="username" name="username" type="text" value="admin" required />
+          </div>
+        </div>
+        <label for="password">Contrasenya</label>
+        <input id="password" name="password" type="password" placeholder="(deixa buit si no n'hi ha)" />
+        <hr>
+      {% endif %}
+
+      <label for="minutes">Temps d'apagada (minuts)</label>
+      <input id="minutes" name="minutes" type="number" min="1" max="1440" value="30" required />
+
+      <button type="button" class="btn btn-off" id="btn-off" onclick="wifiOff()">
+        🔴 Apaga la WiFi
+      </button>
+      <button type="button" class="btn btn-on" id="btn-on" onclick="wifiOn()">
+        🟢 Encén la WiFi ara
+      </button>
+    </form>
+
+    <div id="error-msg" class="error-msg" style="display:none;"></div>
+
+    <div class="status-panel" id="status-panel">
+      <div class="status-indicator">
+        <span class="dot" id="status-dot"></span>
+        <span id="status-text">Carregant…</span>
+      </div>
+      <div class="countdown" id="countdown" style="display:none;">
+        La WiFi s'encendrà d'aquí a:
+        <div class="countdown-value" id="countdown-value">--:--</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let pollInterval = null;
+    let localCountdown = null;
+    let remainingSeconds = 0;
+
+    function showError(msg) {
+      const el = document.getElementById('error-msg');
+      el.textContent = msg;
+      el.style.display = msg ? 'block' : 'none';
+    }
+
+    function formData(extra) {
+      const fd = new FormData(document.getElementById('main-form'));
+      if (extra) Object.entries(extra).forEach(([k,v]) => fd.set(k,v));
+      return fd;
+    }
+
+    async function wifiOff() {
+      showError('');
+      const minutes = document.getElementById('minutes').value;
+      if (!minutes || parseInt(minutes) <= 0) {
+        showError("Introdueix un nombre de minuts vàlid.");
+        return;
+      }
+      setButtons(true);
+      try {
+        const res = await fetch('/wifi/off', { method: 'POST', body: formData() });
+        const data = await res.json();
+        if (!data.ok) { showError(data.error); setButtons(false); return; }
+        startPoll();
+      } catch (e) {
+        showError("Error de xarxa: " + e.message);
+        setButtons(false);
+      }
+    }
+
+    async function wifiOn() {
+      showError('');
+      setButtons(true);
+      try {
+        const res = await fetch('/wifi/on', { method: 'POST', body: formData() });
+        const data = await res.json();
+        if (!data.ok) { showError(data.error); setButtons(false); return; }
+        stopLocalCountdown();
+        await fetchStatus();
+        setButtons(false);
+      } catch (e) {
+        showError("Error de xarxa: " + e.message);
+        setButtons(false);
+      }
+    }
+
+    function setButtons(loading) {
+      document.getElementById('btn-off').disabled = loading;
+      document.getElementById('btn-on').disabled = loading;
+    }
+
+    function formatTime(seconds) {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      if (h > 0) return `${h}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    function updateStatusUI(disabled, remaining) {
+      const dot   = document.getElementById('status-dot');
+      const text  = document.getElementById('status-text');
+      const cd    = document.getElementById('countdown');
+      const cdVal = document.getElementById('countdown-value');
+
+      if (disabled) {
+        dot.className = 'dot dot-off';
+        text.textContent = 'La WiFi està apagada';
+        cd.style.display = 'block';
+        cdVal.textContent = formatTime(remaining);
+      } else {
+        dot.className = 'dot dot-on';
+        text.textContent = 'La WiFi està encesa';
+        cd.style.display = 'none';
+      }
+    }
+
+    function startLocalCountdown() {
+      stopLocalCountdown();
+      localCountdown = setInterval(() => {
+        if (remainingSeconds > 0) {
+          remainingSeconds--;
+          document.getElementById('countdown-value').textContent = formatTime(remainingSeconds);
+        }
+      }, 1000);
+    }
+
+    function stopLocalCountdown() {
+      if (localCountdown) { clearInterval(localCountdown); localCountdown = null; }
+    }
+
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/status');
+        const data = await res.json();
+        if (data.last_error) showError(data.last_error);
+        remainingSeconds = data.remaining_seconds || 0;
+        updateStatusUI(data.disabled, remainingSeconds);
+        if (data.disabled) {
+          startLocalCountdown();
+        } else {
+          stopLocalCountdown();
+          stopPoll();
+          setButtons(false);
+        }
+      } catch (e) { /* ignore transient fetch errors */ }
+    }
+
+    function startPoll() {
+      if (pollInterval) return;
+      fetchStatus();
+      pollInterval = setInterval(fetchStatus, 10000);
+    }
+
+    function stopPoll() {
+      if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+    }
+
+    // Initial status fetch on page load
+    fetchStatus();
+    startPoll();
+  </script>
+</body>
+</html>
