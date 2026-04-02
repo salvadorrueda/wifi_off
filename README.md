@@ -4,8 +4,8 @@ Apaga la WiFi d'un router Mikrotik durant un temps determinat mitjançant una in
 
 ## Requisits
 
-- Python 3.8 o superior
-- Accés a la API del router Mikrotik (port 8728 actiu)
+- Docker i Docker Compose (opció recomanada), **o** Python 3.8 o superior
+- Router MikroTik amb l'API activada (port 8728) — vegeu la secció següent
 
 ## Configuració prèvia del router MikroTik
 
@@ -56,13 +56,28 @@ Substitueix `192.168.88.X` per la IP del servidor on corre el contenidor.
 
 ## Instal·lació
 
+### Opció A — Docker (recomanat)
+
+Requisits: Docker i Docker Compose.
+
+```bash
+bash setup_mikrotik.sh   # configura el router i genera el .env
+docker compose up -d --build
+```
+
+L'aplicació queda disponible a [http://localhost:5000](http://localhost:5000).
+
+### Opció B — Python local
+
+Requisits: Python 3.8 o superior.
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ## Configuració
 
-Copia `.env.example` a `.env` i edita els valors:
+Copia `.env.example` a `.env` i edita els valors (el `setup_mikrotik.sh` ho fa automàticament):
 
 ```bash
 cp .env.example .env
@@ -79,6 +94,12 @@ Si no es defineix `.env`, les credencials es poden introduir directament a la in
 
 ## Ús
 
+**Amb Docker:**
+```bash
+docker compose up -d
+```
+
+**Amb Python local:**
 ```bash
 python app.py
 ```
